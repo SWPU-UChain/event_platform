@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    password: cinsCINS_B511
+    username: selector
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/event_platform
+
+server:
+  port: 4001
+
+event:
+  service:
+    pageCount: 15      #每页展示事件个数
+    relativeCount: 5  #相关事件个数
+    commentCount: 5   #评论详情中每种情感类型评论个数
+    timeStamp: 1200000 # 1*60*60*1000
+
+
+http:
+  maxTotal: 100
+  defaultMaxPerRoute: 20
+  connectTimeout: 1000
+  connectionRequestTimeout: 500
+  socketTimeout: 10000
+  staleConnectionCheckEnabled: true
+
+url:
+  tag: "http://101.204.243.76:5000/tag/"
+  emotion: "http://101.204.243.76:5000/emotion/"
+  abstract: "http://101.204.243.76:5000/abstract/"
+  keyword: "http://101.204.243.76:5000/keyword/"
+
+---
+
+spring:
+  profiles: dev
+  datasource:
+    password: password
+    username: postgres
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${dbHost}:5432/postgres
+    schema: classpath:db/schema.sql

@@ -1,0 +1,289 @@
+#%RAML 1.0
+title: event-eap
+version: 1.0
+description: event module in event analysis platform.
+
+/event:
+  /{standard}:
+    uriParameters:
+      standard:
+        description: media or type , 表明是按照报道媒体还是事件类别分类
+        type: string
+        required: true
+        examples:
+          media:
+            media
+          type:
+            type
+    /{category}:
+      uriParameters:
+        category:
+          description: 报道媒体或事件类别名称
+          type: string
+          required: true
+      /{page}:
+        description: a list of events
+        uriParameters:
+          page:
+            type: integer
+            required: false
+            default: 1
+        get:
+          description: get a list of events
+          responses:
+            200:
+              description: get success
+              body:
+                application/json:
+                  type: Events
+                  example:
+                    - id: id1
+                      title: title1
+                      time: 1483590060000
+                      summarize: summarize1
+                      influence: 12.3
+                      media: [weibo]
+                    - id: id2
+                      title: title2
+                      time: 1483590060000
+                      summarize: summarize2
+                      influence: 12.5
+                      media: [toutiao]
+            400:
+              description: path variable is not a number
+              body:
+                application/json:
+                  schema: Message
+                  example:
+                    msg: path variable not a number
+            404:
+              description: page number out of bound
+              body:
+                application/json:
+                  schema: Message
+                  example:
+                    msg: no so much events
+  /{id}:
+    description: an event's detail information
+    uriParameters:
+      id:
+        type: string
+        required: true
+        description: unique identification of an event
+    get:
+      description: get information
+      responses:
+        404:
+          description: no such event
+          body:
+            application/json:
+              type: Message
+              example:
+                msg: no such event
+        200:
+          description: get info success
+          body:
+            application/json:
+              type: EventDetail
+              example:
+                title: title1
+                summarize: summarize
+                hot: 89.3
+                influence: 43.2
+                type: 喜
+                media:
+                  [weibo, toutiao]
+                keywords:
+                  [跨年, 演唱会]
+                relative:
+                  [
+                    {
+                      id: id2,
+                      title: title2
+                    },
+                    {
+                      id: id3,
+                      title: title3
+                    }
+                  ]
+    /comment:
+      description: comment info of an event
+      get:
+        description: get event's comment info
+        responses:
+          404:
+            description: no comment found
+            body:
+              application/json:
+                type: Message
+                example:
+                  msg: no comment found
+          200:
+            description: get comment info success
+            body:
+              application/json:
+                type: CommentInfo
+                example:
+                  proportion:
+                    [
+                      {
+                        type: 喜,
+                        number: 24
+                      },
+                      {
+                        type: 惧,
+                        number: 12
+                      }
+                    ]
+                  times:
+                    [
+                      {
+                        word: 精彩,
+                        times: 10
+                      },
+                      {
+                        word: 还行,
+                        times: 38
+                      }
+                    ]
+                  comments:
+                    [
+                      {
+                        type: 喜,
+                        comment: 喜大普奔
+                      },
+                      {
+                        type: 惧,
+                        comment: 细思恐极
+                      }
+                    ]
+                  dailyComments:
+                    [
+                      {
+                        time: 1483545600000,
+                        number: 14
+                      },
+                      {
+                        time: 1483632000000,
+                        number: 24
+                      }
+                    ]
+
+
+types:
+  Event:
+    type: object
+    properties:
+      id:
+        description: unique identification of event
+        type: string
+      title:
+        description: event's title
+        type: string
+      time?:
+        description: happened time of event, not required in relative_events
+        type: integer
+      summarize?:
+        description: summarize of event, not required in relative_events
+        type: string
+      influence?:
+        description: influence of event, not required in relative_events
+        type: number
+      media?:
+        description: reported medias, not required in relative_events
+        type: string[]
+  Events:
+    type: array
+    items: Event
+  Message:
+    type: object
+    properties:
+      msg: string
+  EventDetail:
+    type: object
+    properties:
+      title:
+        description: title of the event
+        type: string
+        required: true
+      summarize:
+        description: summarize of the event
+        type: string
+        required: true
+      type:
+        description: event's type
+        type: string
+        required: true
+      hot:
+        description: hot of event
+        type: number
+      influence:
+        description: influence of event
+        type: number
+      media:
+        description: reported media
+        type: string[]
+        required: true
+      keywords:
+        description: keywords of event
+        type: string[]
+        required: true
+      relative:
+        description: relative events
+        type: Events
+        required: true
+  Emotion:
+    type: array
+    items:
+      properties:
+        type:
+          description: emotion type
+          type: string
+          required: true
+        number:
+          description: number of this type
+          type: integer
+          required: true
+  Times:
+    type: array
+    items:
+      properties:
+        word:
+          description: word of comment
+          type: string
+          required: true
+        times:
+          description: number of this word
+          type: integer
+          required: true
+  Comments:
+    type: array
+    items:
+      properties:
+        type:
+          description: emotion type
+          type: string
+          required: true
+        comment:
+          description: highest score comment in this type
+          type: string
+          required: true
+  DailyComments:
+    type: array
+    items:
+      properties:
+        time:
+          description: timestamp of the day
+          type: integer
+          required: true
+        number:
+          description: number of comments in the day
+          type: integer
+          required: true
+  CommentInfo:
+    type: object
+    properties:
+      proportion: Emotion
+      times: Times
+      comments: Comments
+      dailyComments: DailyComments
